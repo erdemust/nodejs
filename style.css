@@ -1,33 +1,65 @@
 /* =========================================
-   GLOBAL STYLING
+   TURKISH PROVERBS QUIZ
+   High-Contrast Dark Theme
    ========================================= */
 
+/* MAIN BACKGROUND */
+
 .stApp {
-    background-color: #f4f7fb;
+    background: linear-gradient(135deg, #0f172a, #172554);
+    color: #f8fafc;
+}
+
+[data-testid="stAppViewContainer"] {
+    background: transparent;
+}
+
+[data-testid="stHeader"] {
+    background: rgba(15, 23, 42, 0.95);
 }
 
 .block-container {
-    max-width: 900px;
+    max-width: 950px;
     padding-top: 2rem;
     padding-bottom: 3rem;
 }
 
 /* =========================================
-   HEADER
+   GLOBAL TEXT COLORS
+   ========================================= */
+
+.stApp,
+.stApp p,
+.stApp label,
+.stApp span,
+.stApp li,
+.stApp div {
+    color: #f1f5f9;
+}
+
+/* Keep icons and interactive controls readable */
+
+.stApp svg {
+    color: inherit;
+}
+
+/* =========================================
+   TITLE
    ========================================= */
 
 .quiz-title {
     text-align: center;
-    font-size: 40px;
-    font-weight: 800;
-    color: #d71920;
-    margin-bottom: 5px;
+    font-size: 42px;
+    font-weight: 900;
+    color: #facc15 !important;
+    margin-bottom: 8px;
+    text-shadow: 0 3px 15px rgba(250, 204, 21, 0.15);
 }
 
 .quiz-subtitle {
     text-align: center;
+    color: #cbd5e1 !important;
     font-size: 17px;
-    color: #64748b;
     margin-bottom: 30px;
 }
 
@@ -36,16 +68,22 @@
    ========================================= */
 
 .proverb-card {
-    background: white;
-    border-left: 7px solid #d71920;
-    border-radius: 14px;
-    padding: 28px 24px;
+    background: #ffffff;
+    border: 3px solid #facc15;
+    border-radius: 18px;
+    padding: 32px 24px;
     margin: 24px 0;
-    font-size: 27px;
-    font-weight: 750;
-    color: #172033;
-    box-shadow: 0 5px 18px rgba(0, 0, 0, 0.06);
+    font-size: 28px;
+    font-weight: 850;
+    color: #111827 !important;
     text-align: center;
+    line-height: 1.5;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+    overflow-wrap: anywhere;
+}
+
+.proverb-card * {
+    color: #111827 !important;
 }
 
 /* =========================================
@@ -53,68 +91,105 @@
    ========================================= */
 
 .answer-card {
-    padding: 15px 18px;
-    margin: 9px 0;
-    border-radius: 11px;
-    font-size: 16px;
-    font-weight: 550;
+    padding: 17px 20px;
+    margin: 12px 0;
+    border-radius: 12px;
+    font-size: 17px;
+    font-weight: 650;
+    line-height: 1.5;
     overflow-wrap: anywhere;
+    transition: transform 0.2s ease;
 }
+
+/* Correct answer */
 
 .answer-correct {
-    background-color: #d1fae5;
-    border: 2px solid #16a34a;
-    color: #14532d;
+    background: #16a34a;
+    border: 3px solid #86efac;
+    color: #ffffff !important;
 }
+
+.answer-correct * {
+    color: #ffffff !important;
+}
+
+/* Incorrect selected answer */
 
 .answer-wrong {
-    background-color: #fee2e2;
-    border: 2px solid #dc2626;
-    color: #7f1d1d;
+    background: #dc2626;
+    border: 3px solid #fca5a5;
+    color: #ffffff !important;
 }
 
+.answer-wrong * {
+    color: #ffffff !important;
+}
+
+/* Other answers */
+
 .answer-neutral {
-    background-color: white;
-    border: 1px solid #dbe2ea;
-    color: #334155;
+    background: #334155;
+    border: 2px solid #64748b;
+    color: #ffffff !important;
+}
+
+.answer-neutral * {
+    color: #ffffff !important;
 }
 
 /* =========================================
-   FEEDBACK
+   FEEDBACK MESSAGES
    ========================================= */
 
 .feedback-correct {
-    background-color: #dcfce7;
-    color: #166534;
-    padding: 14px;
-    border-radius: 10px;
+    background: #166534;
+    border: 2px solid #4ade80;
+    color: #ffffff !important;
+    padding: 18px;
+    border-radius: 12px;
     text-align: center;
-    font-size: 18px;
-    font-weight: 750;
-    margin-top: 18px;
+    font-size: 20px;
+    font-weight: 850;
+    margin-top: 20px;
 }
 
 .feedback-wrong {
-    background-color: #fee2e2;
-    color: #991b1b;
-    padding: 14px;
-    border-radius: 10px;
+    background: #991b1b;
+    border: 2px solid #f87171;
+    color: #ffffff !important;
+    padding: 18px;
+    border-radius: 12px;
     text-align: center;
-    font-size: 18px;
-    font-weight: 750;
-    margin-top: 18px;
+    font-size: 19px;
+    font-weight: 850;
+    margin-top: 20px;
 }
 
 /* =========================================
-   METRICS
+   SCORE METRICS
    ========================================= */
 
 [data-testid="stMetric"] {
-    background: white;
-    padding: 15px;
-    border-radius: 12px;
-    border: 1px solid #e2e8f0;
-    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.03);
+    background: #1e293b;
+    border: 1px solid #475569;
+    padding: 17px;
+    border-radius: 14px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+}
+
+[data-testid="stMetricLabel"],
+[data-testid="stMetricLabel"] * {
+    color: #cbd5e1 !important;
+}
+
+[data-testid="stMetricValue"],
+[data-testid="stMetricValue"] * {
+    color: #facc15 !important;
+}
+
+[data-testid="stMetricDelta"],
+[data-testid="stMetricDelta"] * {
+    color: #86efac !important;
 }
 
 /* =========================================
@@ -123,38 +198,78 @@
 
 .stButton > button {
     width: 100%;
-    min-height: 45px;
-    border-radius: 10px;
-    font-weight: 700;
+    min-height: 48px;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 800;
+    background: #facc15;
+    color: #111827 !important;
+    border: 2px solid #fde047;
     transition: all 0.2s ease;
 }
 
+.stButton > button p,
+.stButton > button span {
+    color: #111827 !important;
+    font-weight: 800;
+}
+
 .stButton > button:hover {
-    border-color: #d71920;
-    color: #d71920;
+    background: #fde047;
+    border-color: #ffffff;
+    transform: translateY(-2px);
+}
+
+.stButton > button:focus {
+    outline: 3px solid #ffffff;
+    outline-offset: 3px;
 }
 
 /* =========================================
-   RADIO OPTIONS
+   RADIO ANSWER OPTIONS
    ========================================= */
 
 div[role="radiogroup"] {
-    gap: 10px;
+    gap: 12px;
 }
 
-div[role="radiogroup"] label {
-    background: white;
-    border: 1px solid #dbe2ea;
-    border-radius: 10px;
-    padding: 12px;
+div[role="radiogroup"] > label {
+    background: #1e293b !important;
+    border: 2px solid #475569 !important;
+    border-radius: 12px !important;
+    padding: 14px !important;
+    transition: all 0.2s ease;
+}
+
+div[role="radiogroup"] > label,
+div[role="radiogroup"] > label * {
+    color: #ffffff !important;
+}
+
+div[role="radiogroup"] > label:hover {
+    background: #334155 !important;
+    border-color: #facc15 !important;
+}
+
+/* Selected radio option */
+
+div[role="radiogroup"] > label:has(input:checked) {
+    border-color: #facc15 !important;
+    background: #334155 !important;
 }
 
 /* =========================================
    PROGRESS BAR
    ========================================= */
 
+div[data-testid="stProgress"] {
+    background: #334155;
+    border-radius: 20px;
+    overflow: hidden;
+}
+
 div[data-testid="stProgress"] > div > div {
-    background-color: #d71920;
+    background: #facc15 !important;
 }
 
 /* =========================================
@@ -162,11 +277,94 @@ div[data-testid="stProgress"] > div > div {
    ========================================= */
 
 section[data-testid="stSidebar"] {
-    background-color: #ffffff;
+    background: #111827;
+    border-right: 1px solid #334155;
+}
+
+section[data-testid="stSidebar"] * {
+    color: #f8fafc;
+}
+
+/* Sidebar input fields */
+
+section[data-testid="stSidebar"] input {
+    background: #1e293b;
+    color: #ffffff !important;
+    border: 1px solid #64748b;
 }
 
 /* =========================================
-   RESPONSIVE DESIGN
+   TEXT INPUTS AND OTHER FORM FIELDS
+   ========================================= */
+
+.stApp input,
+.stApp textarea {
+    color: #111827 !important;
+    background: #ffffff !important;
+    caret-color: #111827;
+}
+
+.stApp input::placeholder,
+.stApp textarea::placeholder {
+    color: #64748b !important;
+    opacity: 1;
+}
+
+/* Select boxes */
+
+[data-baseweb="select"] > div {
+    background: #ffffff;
+    color: #111827;
+}
+
+[data-baseweb="select"] * {
+    color: #111827;
+}
+
+/* =========================================
+   TABLES
+   ========================================= */
+
+[data-testid="stDataFrame"] {
+    border: 1px solid #475569;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+/* =========================================
+   EXPANDERS
+   ========================================= */
+
+[data-testid="stExpander"] {
+    background: #1e293b;
+    border: 1px solid #475569;
+    border-radius: 12px;
+}
+
+[data-testid="stExpander"] summary,
+[data-testid="stExpander"] summary * {
+    color: #ffffff !important;
+}
+
+/* =========================================
+   ALERTS
+   ========================================= */
+
+[data-testid="stAlert"] p,
+[data-testid="stAlert"] span {
+    color: inherit;
+}
+
+/* =========================================
+   DIVIDERS
+   ========================================= */
+
+hr {
+    border-color: #475569;
+}
+
+/* =========================================
+   RESPONSIVE MOBILE DESIGN
    ========================================= */
 
 @media (max-width: 600px) {
@@ -174,12 +372,21 @@ section[data-testid="stSidebar"] {
         font-size: 30px;
     }
 
+    .quiz-subtitle {
+        font-size: 15px;
+    }
+
     .proverb-card {
-        font-size: 21px;
+        font-size: 22px;
         padding: 22px 15px;
     }
 
-    .quiz-subtitle {
+    .answer-card {
         font-size: 15px;
+        padding: 14px;
+    }
+
+    [data-testid="stMetric"] {
+        padding: 10px;
     }
 }
