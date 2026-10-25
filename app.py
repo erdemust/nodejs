@@ -1,6 +1,8 @@
 import random
 import sqlite3
 import time
+import html
+
 from pathlib import Path
 from datetime import datetime
 
@@ -8,9 +10,9 @@ import pandas as pd
 import streamlit as st
 
 
-# =========================================
+# =====================================================
 # CONFIGURATION
-# =========================================
+# =====================================================
 
 st.set_page_config(
     page_title="Turkish Proverbs Quiz",
@@ -26,33 +28,37 @@ FEEDBACK_SECONDS = 3
 OPTIONS_PER_QUESTION = 4
 
 
-# =========================================
+# =====================================================
 # LOAD CSS
-# =========================================
+# =====================================================
 
 def load_css():
     if CSS_PATH.exists():
         css = CSS_PATH.read_text(encoding="utf-8")
+
         st.markdown(
             f"<style>{css}</style>",
             unsafe_allow_html=True,
         )
     else:
-        st.warning("style.css was not found.")
+        st.warning(
+            "style.css was not found. "
+            "The app will use Streamlit's default styling."
+        )
 
 
 load_css()
 
 
-# =========================================
-# DATABASE
-# =========================================
+# =====================================================
+# DATABASE CONNECTION
+# =====================================================
 
 def get_connection():
     if not DB_PATH.exists():
         st.error(
             f"Database not found: {DB_PATH}\n\n"
-            "Place proverbs_quiz.db in the same folder as app.py."
+            "Place proverbs_quiz.db in the same directory as app.py."
         )
         st.stop()
 
@@ -61,32 +67,31 @@ def get_connection():
         timeout=30,
     )
 
+    connection.execute("PRAGMA busy_timeout = 30000")
+
     connection.execute(
         """
         CREATE TABLE IF NOT EXISTS quiz_results (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            player_name TEXT,
-            score INTEGER,
-            total_questions INTEGER,
-            percentage REAL,
-            completed_at TEXT
+            player_number INTEGER NOT NULL,
+            score INTEGER NOT NULL,
+            total_questions INTEGER NOT NULL,
+            percentage REAL NOT NULL,
+            completed_at TEXT NOT NULL
         )
         """
     )
 
     connection.commit()
+
     return connection
 
 
-def get_question_table(connection):
-    """
-    Detect the question table and its column names.
+# =====================================================
+# DETECT QUESTION TABLE AND COLUMNS
+# =====================================================
 
-    Supports common schemas such as:
-        questions(proverb, answer)
-        proverbs(turkish, english)
-        questions(turkish_proverb, english_equivalent)
-    """
+def get_question_table(connection):
 
     tables = connection.execute(
         """
@@ -101,62 +106,68 @@ def get_question_table(connection):
 
     if not tables:
         st.error(
-            "No question table was found in proverbs_quiz.db."
+            "No question tables were found in proverbs_quiz.db."
         )
         st.stop()
+
+    proverb_candidates = [
+        "proverb",
+        "turkish_proverb",
+        "turkish",
+        "turkish_text",
+        "question",
+        "name",
+    ]
+
+    answer_candidates = [
+        "answer",
+        "english",
+        "english_equivalent",
+        "translation",
+        "meaning",
+        "correct_answer",
+    ]
 
     candidates = []
 
     for (table_name,) in tables:
+
         columns = connection.execute(
             f'PRAGMA table_info("{table_name}")'
         ).fetchall()
 
-        column_names = [row[1] for row in columns]
         normalized = {
-            name.lower().strip(): name
-            for name in column_names
+            row[1].lower().strip(): row[1]
+            for row in columns
         }
-
-        proverb_candidates = [
-            "proverb",
-            "turkish_proverb",
-            "turkish",
-            "turkish_text",
-            "question",
-            "name",
-        ]
-
-        answer_candidates = [
-            "answer",
-            "english",
-            "english_equivalent",
-            "translation",
-            "meaning",
-            "correct_answer",
-        ]
 
         proverb_column = next(
             (
-                normalized[name]
-                for name in proverb_candidates
-                if name in normalized
+                normalized[column]
+                for column in proverb_candidates
+                if column in normalized
             ),
             None,
         )
 
         answer_column = next(
             (
-                normalized[name]
-                for name in answer_candidates
-                if name in normalized
+                normalized[column]
+                for column in answer_candidates
+                if column in normalized
             ),
             None,
         )
 
         if proverb_column and answer_column:
+
+            row_count = connection.execute(
+                f'SELECT COUNT(*) FROM "{table_name}"'
+            ).fetchone()[0]
+
             candidates.append(
                 (
+                    row_count,
                     table_name,
                     proverb_column,
                     answer_column,
@@ -166,25 +177,35 @@ def get_question_table(connection):
     if not candidates:
         st.error(
             "Could not identify the proverb and answer columns.\n\n"
-            "Expected names such as 'proverb' and 'answer', "
-            "'turkish' and 'english', or 'name' and 'meaning'."
+            "Expected columns such as proverb/answer, "
+            "turkish/english, or name/meaning."
         )
 
-        st.write("Tables found:", [row[0] for row in tables])
+        st.write(
+            "Tables found:",
+            [row[0] for row in tables],
+        )
+
         st.stop()
 
-    # Prefer the table with the most question rows.
+    # Use the compatible table containing the most rows.
     candidates.sort(
-        key=lambda item: connection.execute(
-            f'SELECT COUNT(*) FROM "{item[0]}"'
-        ).fetchone()[0],
+        key=lambda item: item[0],
         reverse=True,
     )
 
-    return candidates[0]
+    _, table, proverb_column, answer_column = candidates[0]
+
+    return table, proverb_column, answer_column
 
 
+# =====================================================
+# LOAD QUESTIONS FROM SQLITE
+# =====================================================
+
+@st.cache_data(ttl=60)
 def load_questions():
+
     connection = get_connection()
 
     try:
@@ -208,41 +229,52 @@ def load_questions():
     finally:
         connection.close()
 
-    questions = []
+    unique_questions = {}
+    normalized_answers = set()
 
     for proverb, answer in rows:
-        questions.append(
-            {
-                "proverb": str(proverb).strip(),
-                "answer": str(answer).strip(),
-            }
+
+        proverb = str(proverb).strip()
+        answer = str(answer).strip()
+
+        # Prevent duplicate proverb-answer pairs.
+        key = (
+            proverb.casefold(),
+            answer.casefold(),
         )
 
-    # Remove duplicate proverb-answer pairs.
-    unique = {}
+        if key not in unique_questions:
+            unique_questions[key] = {
+                "proverb": proverb,
+                "answer": answer,
+            }
 
-    for question in questions:
-        unique[
-            (
-                question["proverb"],
-                question["answer"],
-            )
-        ] = question
+        normalized_answers.add(answer.casefold())
 
-    questions = list(unique.values())
+    questions = list(unique_questions.values())
 
     if not questions:
-        st.error("The question table is empty.")
+        st.error(
+            "No questions were found in the database."
+        )
+        st.stop()
+
+    if len(normalized_answers) < 2:
+        st.error(
+            "At least two different English answers "
+            "are required to generate a quiz."
+        )
         st.stop()
 
     return questions
 
 
-# =========================================
-# CREATE MULTIPLE-CHOICE OPTIONS
-# =========================================
+# =====================================================
+# GENERATE MULTIPLE-CHOICE QUESTIONS
+# =====================================================
 
 def build_quiz_questions(source_questions):
+
     questions = []
 
     all_answers = list(
@@ -253,12 +285,14 @@ def build_quiz_questions(source_questions):
     )
 
     for item in source_questions:
+
         correct_answer = item["answer"]
 
+        # Avoid duplicate answer options, ignoring case.
         distractors = [
             answer
             for answer in all_answers
-            if answer != correct_answer
+            if answer.casefold() != correct_answer.casefold()
         ]
 
         number_of_distractors = min(
@@ -287,11 +321,12 @@ def build_quiz_questions(source_questions):
     return questions
 
 
-# =========================================
+# =====================================================
 # SESSION STATE
-# =========================================
+# =====================================================
 
 def reset_quiz():
+
     source_questions = load_questions()
 
     st.session_state.questions = build_quiz_questions(
@@ -304,26 +339,37 @@ def reset_quiz():
     st.session_state.finished = False
     st.session_state.result_saved = False
 
+    st.session_state.completed_at = None
+    st.session_state.saved_player_number = None
+
+    st.session_state.quiz_started = False
+
 
 if "questions" not in st.session_state:
     reset_quiz()
 
-if "player_name" not in st.session_state:
-    st.session_state.player_name = "Player"
+if "player_number" not in st.session_state:
+    st.session_state.player_number = 1
 
 
-# =========================================
+# =====================================================
 # SAVE RESULTS
-# =========================================
+# =====================================================
 
-def save_result(player_name, score, total, percentage):
+def save_result(player_number, score, total, percentage):
+
     connection = get_connection()
 
     try:
+
+        completed_at = datetime.now().astimezone().strftime(
+            "%Y-%m-%d %H:%M:%S %Z"
+        )
+
         connection.execute(
             """
             INSERT INTO quiz_results (
-                player_name,
+                player_number,
                 score,
                 total_questions,
                 percentage,
@@ -332,33 +378,38 @@ def save_result(player_name, score, total, percentage):
             VALUES (?, ?, ?, ?, ?)
             """,
             (
-                player_name,
-                score,
-                total,
-                percentage,
-                datetime.now().strftime(
-                    "%Y-%m-%d %H:%M:%S"
-                ),
+                int(player_number),
+                int(score),
+                int(total),
+                float(percentage),
+                completed_at,
             ),
         )
 
         connection.commit()
 
+        return completed_at
+
     finally:
         connection.close()
 
 
-# =========================================
+# =====================================================
 # SIDEBAR
-# =========================================
+# =====================================================
 
 with st.sidebar:
+
     st.header("⚙️ Quiz Settings")
 
-    st.text_input(
-        "Player name",
-        key="player_name",
-        max_chars=50,
+    st.number_input(
+        "Player Number",
+        min_value=1,
+        max_value=999999999,
+        step=1,
+        key="player_number",
+        disabled=st.session_state.quiz_started,
+        help="Enter your assigned competition number before starting.",
     )
 
     st.divider()
@@ -369,9 +420,10 @@ with st.sidebar:
         """
         - Choose the correct English equivalent.
         - Correct answers appear in green.
-        - Wrong selections appear in red.
+        - Incorrect selections appear in red.
         - Feedback lasts three seconds.
         - The next question loads automatically.
+        - Your result and completion time are saved.
         """
     )
 
@@ -385,9 +437,9 @@ with st.sidebar:
         st.rerun()
 
 
-# =========================================
+# =====================================================
 # HEADER
-# =========================================
+# =====================================================
 
 st.markdown(
     """
@@ -403,9 +455,36 @@ st.markdown(
 )
 
 
-# =========================================
+# =====================================================
+# QUIZ START SCREEN
+# =====================================================
+
+if not st.session_state.quiz_started:
+
+    st.info(
+        f"🎮 Your Player Number: "
+        f"{st.session_state.player_number}"
+    )
+
+    st.write(
+        "Ready to test your knowledge of Turkish proverbs?"
+    )
+
+    if st.button(
+        "🚀 Start Quiz",
+        type="primary",
+        use_container_width=True,
+    ):
+
+        st.session_state.quiz_started = True
+        st.rerun()
+
+    st.stop()
+
+
+# =====================================================
 # QUIZ STATE
-# =========================================
+# =====================================================
 
 questions = st.session_state.questions
 current = st.session_state.current
@@ -416,16 +495,15 @@ total = len(questions)
 score = sum(
     1
     for index, selected_answer in answers.items()
-    if selected_answer
-    == questions[index]["answer"]
+    if selected_answer == questions[index]["answer"]
 )
 
 answered_count = len(answers)
 
 
-# =========================================
+# =====================================================
 # SCOREBOARD
-# =========================================
+# =====================================================
 
 col1, col2, col3 = st.columns(3)
 
@@ -444,35 +522,43 @@ col3.metric(
     f"{answered_count}/{total}",
 )
 
-st.progress(answered_count / total)
+st.progress(
+    answered_count / total
+)
 
 st.divider()
 
 
-# =========================================
+# =====================================================
 # QUESTION SCREEN
-# =========================================
+# =====================================================
 
 if not st.session_state.finished and current < total:
 
     question = questions[current]
 
+    safe_proverb = html.escape(
+        question["proverb"]
+    )
+
     st.markdown(
         f"""
         <div class="proverb-card">
-            🇹🇷 {question["proverb"]}
+            🇹🇷 {safe_proverb}
         </div>
         """,
         unsafe_allow_html=True,
     )
 
-    st.write("### Choose the correct English equivalent")
+    st.markdown(
+        "### Choose the correct English equivalent"
+    )
 
     submitted_answer = answers.get(current)
 
-    # -------------------------------------
+    # -------------------------------------------------
     # BEFORE ANSWERING
-    # -------------------------------------
+    # -------------------------------------------------
 
     if submitted_answer is None:
 
@@ -491,16 +577,22 @@ if not st.session_state.finished and current < total:
         ):
 
             if selected is None:
-                st.warning("Please select an answer.")
+
+                st.warning(
+                    "Please select an answer first."
+                )
 
             else:
+
                 st.session_state.answers[current] = selected
-                st.session_state.feedback_start = time.time()
+
+                st.session_state.feedback_start = time.monotonic()
+
                 st.rerun()
 
-    # -------------------------------------
+    # -------------------------------------------------
     # AFTER ANSWERING
-    # -------------------------------------
+    # -------------------------------------------------
 
     else:
 
@@ -508,28 +600,34 @@ if not st.session_state.finished and current < total:
 
         for option in question["options"]:
 
+            safe_option = html.escape(option)
+
             if option == correct_answer:
+
                 css_class = "answer-card answer-correct"
                 icon = "✅"
 
             elif option == submitted_answer:
+
                 css_class = "answer-card answer-wrong"
                 icon = "❌"
 
             else:
+
                 css_class = "answer-card answer-neutral"
                 icon = "▫️"
 
             st.markdown(
                 f"""
                 <div class="{css_class}">
-                    {icon} {option}
+                    {icon} {safe_option}
                 </div>
                 """,
                 unsafe_allow_html=True,
             )
 
         if submitted_answer == correct_answer:
+
             st.markdown(
                 """
                 <div class="feedback-correct">
@@ -540,6 +638,7 @@ if not st.session_state.finished and current < total:
             )
 
         else:
+
             st.markdown(
                 """
                 <div class="feedback-wrong">
@@ -549,15 +648,16 @@ if not st.session_state.finished and current < total:
                 unsafe_allow_html=True,
             )
 
-        # ---------------------------------
-        # AUTOMATIC ADVANCE AFTER 3 SECONDS
-        # ---------------------------------
+        # -------------------------------------------------
+        # AUTO-ADVANCE AFTER THREE SECONDS
+        # -------------------------------------------------
 
         if st.session_state.feedback_start is None:
-            st.session_state.feedback_start = time.time()
+
+            st.session_state.feedback_start = time.monotonic()
 
         elapsed = (
-            time.time()
+            time.monotonic()
             - st.session_state.feedback_start
         )
 
@@ -575,17 +675,19 @@ if not st.session_state.finished and current < total:
 
             st.session_state.current += 1
             st.session_state.feedback_start = None
+
             st.rerun()
 
         else:
 
             st.session_state.finished = True
+
             st.rerun()
 
 
-# =========================================
+# =====================================================
 # FINAL RESULTS
-# =========================================
+# =====================================================
 
 if st.session_state.finished:
 
@@ -597,8 +699,7 @@ if st.session_state.finished:
     score = sum(
         1
         for index, selected_answer in answers.items()
-        if selected_answer
-        == questions[index]["answer"]
+        if selected_answer == questions[index]["answer"]
     )
 
     percentage = round(
@@ -606,20 +707,45 @@ if st.session_state.finished:
         1,
     )
 
+    # -------------------------------------------------
+    # SAVE ONCE
+    # -------------------------------------------------
+
     if not st.session_state.result_saved:
 
-        save_result(
-            st.session_state.player_name.strip() or "Player",
+        player_number = int(
+            st.session_state.player_number
+        )
+
+        completed_at = save_result(
+            player_number,
             score,
             total,
             percentage,
         )
 
+        st.session_state.saved_player_number = player_number
+        st.session_state.completed_at = completed_at
+
         st.session_state.result_saved = True
+
+    # -------------------------------------------------
+    # FINAL SCORE
+    # -------------------------------------------------
 
     st.balloons()
 
     st.title("🏆 Quiz Completed!")
+
+    st.success(
+        f"🎮 Player Number: "
+        f"{st.session_state.saved_player_number}"
+    )
+
+    st.caption(
+        f"📅 Completed: "
+        f"{st.session_state.completed_at}"
+    )
 
     col1, col2 = st.columns(2)
 
@@ -634,23 +760,38 @@ if st.session_state.finished:
     )
 
     if percentage == 100:
-        st.success("Perfect score! Mükemmel! 🇹🇷")
+
+        st.success(
+            "Perfect score! Mükemmel! 🇹🇷"
+        )
 
     elif percentage >= 80:
-        st.success("Excellent work! Harika!")
+
+        st.success(
+            "Excellent work! Harika!"
+        )
 
     elif percentage >= 60:
-        st.info("Good job! Keep learning.")
+
+        st.info(
+            "Good job! Keep learning."
+        )
 
     elif percentage >= 40:
-        st.warning("Good effort! Practice makes perfect.")
+
+        st.warning(
+            "Good effort! Practice makes perfect."
+        )
 
     else:
-        st.info("Keep practicing. You will improve!")
 
-    # -------------------------------------
+        st.info(
+            "Keep practicing. You will improve!"
+        )
+
+    # -------------------------------------------------
     # ANSWER REVIEW
-    # -------------------------------------
+    # -------------------------------------------------
 
     st.divider()
 
@@ -669,11 +810,13 @@ if st.session_state.finished:
         ):
 
             if is_correct:
+
                 st.success(
                     f"Your answer: {user_answer}"
                 )
 
             else:
+
                 st.error(
                     f"Your answer: {user_answer or 'Not answered'}"
                 )
@@ -682,9 +825,9 @@ if st.session_state.finished:
                     f"Correct answer: {correct_answer}"
                 )
 
-    # -------------------------------------
+    # -------------------------------------------------
     # RECENT RESULTS
-    # -------------------------------------
+    # -------------------------------------------------
 
     st.divider()
 
@@ -693,21 +836,23 @@ if st.session_state.finished:
     connection = get_connection()
 
     try:
+
         rows = connection.execute(
             """
             SELECT
-                player_name,
+                player_number,
                 score,
                 total_questions,
                 percentage,
                 completed_at
             FROM quiz_results
             ORDER BY id DESC
-            LIMIT 10
+            LIMIT 20
             """
         ).fetchall()
 
     finally:
+
         connection.close()
 
     if rows:
@@ -715,11 +860,11 @@ if st.session_state.finished:
         dataframe = pd.DataFrame(
             rows,
             columns=[
-                "Player",
+                "Player Number",
                 "Score",
-                "Total",
+                "Total Questions",
                 "Percentage",
-                "Completed At",
+                "Date and Time",
             ],
         )
 
@@ -729,10 +874,23 @@ if st.session_state.finished:
             hide_index=True,
         )
 
+    else:
+
+        st.info(
+            "No quiz results have been recorded yet."
+        )
+
+    # -------------------------------------------------
+    # PLAY AGAIN
+    # -------------------------------------------------
+
+    st.divider()
+
     if st.button(
         "🔄 Play Again",
         type="primary",
         use_container_width=True,
     ):
+
         reset_quiz()
         st.rerun()
