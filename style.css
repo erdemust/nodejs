@@ -1,730 +1,431 @@
-/* =====================================================
-   TURKISH PROVERBS QUIZ — KAHOOT-INSPIRED DESIGN
-   ===================================================== */
-
-/* ---------- COLOR PALETTE ---------- */
+css
+/* ==========================================
+   1. GLOBAL DESIGN
+   ========================================== */
 
 :root {
-    --background: #24105c;
-    --background-light: #351779;
+    --background: #f3f5fc;
     --surface: #ffffff;
-    --surface-soft: #f5f3ff;
-    --text: #211747;
-    --text-muted: #6b6585;
-
-    --red: #e73550;
-    --blue: #2689ed;
-    --yellow: #f5b82e;
-    --green: #29b765;
-
-    --success-bg: #d9fbe7;
-    --success-text: #126735;
-
-    --error-bg: #ffe0e5;
-    --error-text: #a31935;
-
-    --radius: 18px;
-    --shadow: 0 8px 0 rgba(15, 5, 45, 0.16);
+    --text: #202844;
+    --muted: #64708b;
+    --primary: #5145cd;
+    --green: #15803d;
+    --red: #b91c1c;
+    --border: #dce2f0;
 }
-
-/* =====================================================
-   GLOBAL APP BACKGROUND
-   ===================================================== */
 
 .stApp {
-    background:
-        radial-gradient(
-            circle at 10% 10%,
-            rgba(117, 71, 230, 0.45),
-            transparent 30%
-        ),
-        radial-gradient(
-            circle at 90% 85%,
-            rgba(39, 137, 237, 0.25),
-            transparent 30%
-        ),
-        var(--background);
-
-    color: white;
-    font-family: "Inter", "Segoe UI", sans-serif;
+    background: var(--background);
+    color: var(--text);
+    font-family: Arial, Helvetica, sans-serif;
 }
-
-/* Main content */
 
 .block-container {
-    max-width: 1000px;
-    padding-top: 2rem;
-    padding-bottom: 3rem;
+    max-width: 900px;
+    padding: 1.5rem 1.5rem 3rem;
 }
 
-/* Default text */
+/* Prevent low-contrast text */
 
+.stApp,
 .stApp p,
 .stApp label,
-.stApp li {
-    color: inherit;
-}
-
-/* Improve visibility of Streamlit text */
-
+.stApp li,
 .stMarkdown,
-.stCaption,
-[data-testid="stMarkdownContainer"] {
-    color: inherit;
+[data-testid="stCaptionContainer"] {
+    color: var(--text);
 }
 
-/* =====================================================
-   HEADER
-   ===================================================== */
+/* ==========================================
+   2. HEADER
+   ========================================== */
 
 .quiz-title {
+    color: #c81e36;
     text-align: center;
-    color: #ffffff;
-    font-size: clamp(30px, 5vw, 46px);
+    font-size: clamp(27px, 4vw, 38px);
     font-weight: 900;
-    line-height: 1.2;
-    letter-spacing: -1.2px;
-    margin: 10px 0 12px;
-    text-shadow: 0 4px 0 rgba(0, 0, 0, 0.12);
+    line-height: 1.25;
+    margin: 10px 0 8px;
+    overflow-wrap: anywhere;
 }
 
 .quiz-subtitle {
+    color: var(--muted);
     text-align: center;
-    color: #ddd4ff;
-    font-size: 17px;
-    font-weight: 500;
-    margin-bottom: 32px;
+    font-size: 16px;
+    line-height: 1.6;
+    margin-bottom: 28px;
 }
 
-/* =====================================================
-   QUESTION CARD
-   ===================================================== */
+/* ==========================================
+   3. PROVERB CARD
+   ========================================== */
 
 .proverb-card {
-    position: relative;
-    background: var(--surface);
-    color: var(--text);
-
-    border: none;
-    border-radius: 22px;
-
-    padding: 36px 28px;
-    margin: 28px 0;
-
-    font-size: clamp(23px, 3.5vw, 34px);
-    font-weight: 850;
-    line-height: 1.5;
-
+    background: #ffffff;
+    color: #172554;
+    border: 1px solid #e0e5f2;
+    border-left: 7px solid #d71920;
+    border-radius: 16px;
+    padding: 26px 22px;
+    margin: 22px 0;
     text-align: center;
+    font-size: clamp(21px, 3vw, 29px);
+    font-weight: 800;
+    line-height: 1.55;
     overflow-wrap: anywhere;
-
-    box-shadow: 0 9px 0 rgba(13, 5, 45, 0.22);
-
-    animation: question-enter 0.4s ease-out;
+    box-shadow: 0 5px 18px rgba(35, 48, 90, 0.07);
 }
 
-/* Decorative top edge */
+/* ==========================================
+   4. QUESTION INSTRUCTION
+   ========================================== */
 
-.proverb-card::before {
-    content: "";
-    display: block;
-
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-
-    height: 8px;
-
-    background: linear-gradient(
-        90deg,
-        var(--red) 0%,
-        var(--yellow) 33%,
-        var(--green) 66%,
-        var(--blue) 100%
-    );
-
-    border-radius: 22px 22px 0 0;
-}
-
-/* =====================================================
-   QUESTION INSTRUCTION
-   ===================================================== */
-
-.stApp h3 {
-    color: #ffffff;
+.stMarkdown h3,
+.stMarkdown h2 {
+    color: #202844;
     font-weight: 800;
     line-height: 1.4;
-    margin-top: 25px;
-    margin-bottom: 20px;
 }
 
-.stApp h2,
-.stApp h4 {
-    color: #ffffff;
-    font-weight: 800;
+/* ==========================================
+   5. SCOREBOARD
+   ========================================== */
+
+[data-testid="stMetric"] {
+    background: #ffffff;
+    border: 1px solid #dfe5f2;
+    border-radius: 14px;
+    padding: 15px 12px;
+    box-shadow: 0 3px 12px rgba(35, 48, 90, 0.05);
+    min-width: 0;
 }
 
-/* =====================================================
-   KAHOOT-STYLE ANSWER OPTIONS
-   ===================================================== */
+[data-testid="stMetricLabel"] {
+    color: #56627d !important;
+    font-size: 14px !important;
+    font-weight: 700 !important;
+}
+
+[data-testid="stMetricValue"] {
+    color: #312e81 !important;
+    font-size: clamp(20px, 3vw, 29px) !important;
+    font-weight: 900 !important;
+    overflow-wrap: anywhere;
+}
+
+/* ==========================================
+   6. PROGRESS BAR
+   ========================================== */
+
+div[data-testid="stProgress"] {
+    margin-top: 15px;
+    margin-bottom: 18px;
+}
+
+div[data-testid="stProgress"] > div {
+    background: #dce2f0;
+    border-radius: 20px;
+    overflow: hidden;
+    height: 12px;
+}
+
+div[data-testid="stProgress"] > div > div {
+    background: linear-gradient(90deg, #5145cd, #8b5cf6);
+    border-radius: 20px;
+}
+
+/* ==========================================
+   7. ANSWER OPTIONS — BEFORE ANSWERING
+   ========================================== */
 
 /* Radio group layout */
 
 div[role="radiogroup"] {
-    display: grid !important;
+    display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 16px;
-
+    gap: 14px;
+    margin: 18px 0;
     width: 100%;
-    margin-top: 20px;
-    margin-bottom: 22px;
 }
 
-/* Each answer option */
+/* Each option */
 
 div[role="radiogroup"] > label {
-    position: relative;
-
-    display: flex !important;
+    box-sizing: border-box;
+    display: flex;
     align-items: center;
-
-    min-height: 115px;
-
-    padding: 20px 18px !important;
-
-    border: 0 !important;
-    border-radius: 15px !important;
-
-    color: #ffffff !important;
-
-    font-size: 17px !important;
-    font-weight: 750 !important;
-    line-height: 1.5 !important;
-
-    overflow-wrap: anywhere;
-
-    box-shadow: 0 6px 0 rgba(0, 0, 0, 0.18);
-
+    min-height: 100px;
+    padding: 19px 17px;
+    margin: 0 !important;
+    background: #ffffff;
+    border: 2px solid #d8deee;
+    border-radius: 14px;
+    box-shadow: 0 4px 10px rgba(30, 41, 80, 0.05);
     transition:
-        transform 0.16s ease,
-        filter 0.16s ease,
-        box-shadow 0.16s ease;
-
-    cursor: pointer;
+        border-color 0.15s ease,
+        background-color 0.15s ease,
+        box-shadow 0.15s ease;
 }
 
-/* Remove the default white radio button appearance */
+/* Option text */
 
-div[role="radiogroup"] > label > div:first-child {
+div[role="radiogroup"] > label p {
+    color: #202844 !important;
+    font-size: 16px !important;
+    font-weight: 700 !important;
+    line-height: 1.55 !important;
+    overflow-wrap: anywhere;
+    margin: 0;
+}
+
+/* Radio indicator */
+
+div[role="radiogroup"] > label input {
+    accent-color: #5145cd;
     flex-shrink: 0;
 }
 
-/* RED ANSWER */
-
-div[role="radiogroup"] > label:nth-child(4n + 1) {
-    background: var(--red) !important;
-    color: #ffffff !important;
-}
-
-/* BLUE ANSWER */
-
-div[role="radiogroup"] > label:nth-child(4n + 2) {
-    background: var(--blue) !important;
-    color: #ffffff !important;
-}
-
-/* YELLOW ANSWER */
-
-div[role="radiogroup"] > label:nth-child(4n + 3) {
-    background: var(--yellow) !important;
-    color: #241747 !important;
-}
-
-/* GREEN ANSWER */
-
-div[role="radiogroup"] > label:nth-child(4n + 4) {
-    background: var(--green) !important;
-    color: #ffffff !important;
-}
-
-/* Make the text inside the options readable */
-
-div[role="radiogroup"] > label p,
-div[role="radiogroup"] > label span {
-    color: inherit !important;
-    font-weight: inherit;
-}
-
-/* Hover effect */
+/* Hover */
 
 div[role="radiogroup"] > label:hover {
-    filter: brightness(1.08);
-    transform: translateY(-3px);
-    box-shadow: 0 9px 0 rgba(0, 0, 0, 0.18);
+    border-color: #6558e8;
+    background: #f5f3ff;
+    box-shadow: 0 5px 14px rgba(81, 69, 205, 0.12);
 }
 
 /* Selected option */
 
 div[role="radiogroup"] > label:has(input:checked) {
-    outline: 4px solid #ffffff !important;
-    outline-offset: 2px;
-
-    transform: translateY(-2px);
-
-    box-shadow:
-        0 0 0 7px rgba(255, 255, 255, 0.16),
-        0 7px 0 rgba(0, 0, 0, 0.18);
+    background: #eeebff;
+    border: 2px solid #5145cd;
+    box-shadow: 0 0 0 2px rgba(81, 69, 205, 0.10);
 }
 
-/* Keyboard focus */
-
-div[role="radiogroup"] > label:focus-within {
-    outline: 3px solid #ffffff;
-    outline-offset: 3px;
-}
-
-/* =====================================================
-   ANSWER RESULT CARDS
-   Used after the player submits an answer
-   ===================================================== */
+/* ==========================================
+   8. ANSWER REVIEW CARDS
+   ========================================== */
 
 .answer-card {
-    display: flex;
-    align-items: center;
-
-    padding: 19px 22px;
-    margin: 12px 0;
-
-    min-height: 64px;
-
-    border-radius: 14px;
-
-    font-size: 17px;
-    font-weight: 750;
-    line-height: 1.5;
-
+    display: block;
+    box-sizing: border-box;
+    width: 100%;
+    padding: 17px 19px;
+    margin: 11px 0;
+    border-radius: 13px;
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 1.6;
     overflow-wrap: anywhere;
-
-    box-shadow: 0 4px 0 rgba(0, 0, 0, 0.12);
-
-    animation: answer-enter 0.25s ease-out;
 }
 
-/* Correct answer: green */
+/* Correct answer */
 
 .answer-correct {
-    background: #16a34a !important;
-    color: #ffffff !important;
-
-    border: 3px solid #86efac;
+    background: #dcfce7;
+    color: #14532d !important;
+    border: 2px solid #16a34a;
 }
 
-/* Incorrect selected answer: red */
+/* Selected incorrect answer */
 
 .answer-wrong {
-    background: #dc2626 !important;
-    color: #ffffff !important;
-
-    border: 3px solid #fda4af;
+    background: #fee2e2;
+    color: #991b1b !important;
+    border: 2px solid #dc2626;
 }
 
-/* Unselected answers */
+/* Other options */
 
 .answer-neutral {
-    background: #ffffff !important;
-    color: #33265e !important;
-
-    border: 2px solid #e6e0f5;
+    background: #ffffff;
+    color: #334155 !important;
+    border: 1px solid #dce2f0;
 }
 
-/* =====================================================
-   FEEDBACK MESSAGES
-   ===================================================== */
+/* ==========================================
+   9. FEEDBACK
+   ========================================== */
 
 .feedback-correct,
 .feedback-wrong {
-    padding: 20px;
-    margin-top: 22px;
-    margin-bottom: 18px;
-
-    border-radius: 15px;
-
+    box-sizing: border-box;
+    width: 100%;
+    padding: 17px 15px;
+    margin: 18px 0;
+    border-radius: 13px;
     text-align: center;
-
-    font-size: 20px;
-    font-weight: 900;
+    font-size: 18px;
+    font-weight: 800;
     line-height: 1.5;
-
-    animation: feedback-enter 0.3s ease-out;
+    overflow-wrap: anywhere;
 }
-
-/* Correct feedback */
 
 .feedback-correct {
-    background: var(--success-bg);
-    color: var(--success-text);
-
-    border: 2px solid #4ade80;
+    background: #dcfce7;
+    color: #14532d !important;
+    border: 2px solid #16a34a;
 }
-
-/* Incorrect feedback */
 
 .feedback-wrong {
-    background: var(--error-bg);
-    color: var(--error-text);
-
-    border: 2px solid #fb7185;
+    background: #fee2e2;
+    color: #991b1b !important;
+    border: 2px solid #dc2626;
 }
 
-/* =====================================================
-   SCOREBOARD METRICS
-   ===================================================== */
-
-[data-testid="stMetric"] {
-    background: #ffffff;
-
-    padding: 20px 16px;
-
-    border: none;
-    border-radius: 16px;
-
-    box-shadow: 0 6px 0 rgba(10, 3, 40, 0.17);
-
-    text-align: center;
-
-    transition: transform 0.2s ease;
-}
-
-[data-testid="stMetric"]:hover {
-    transform: translateY(-2px);
-}
-
-/* Metric labels */
-
-[data-testid="stMetricLabel"] {
-    color: #71658f !important;
-    font-size: 14px !important;
-    font-weight: 750 !important;
-}
-
-/* Metric values */
-
-[data-testid="stMetricValue"] {
-    color: #30146b !important;
-    font-size: clamp(23px, 3vw, 34px) !important;
-    font-weight: 900 !important;
-}
-
-/* Metric delta */
-
-[data-testid="stMetricDelta"] {
-    font-weight: 700 !important;
-}
-
-/* =====================================================
-   PROGRESS BAR
-   ===================================================== */
-
-div[data-testid="stProgress"] {
-    margin-top: 20px;
-    margin-bottom: 25px;
-
-    background: rgba(255, 255, 255, 0.18);
-
-    border-radius: 100px;
-    overflow: hidden;
-}
-
-div[data-testid="stProgress"] > div {
-    background: rgba(255, 255, 255, 0.18);
-    border-radius: 100px;
-}
-
-div[data-testid="stProgress"] > div > div {
-    background: linear-gradient(
-        90deg,
-        #fbbf24,
-        #4ade80
-    ) !important;
-
-    border-radius: 100px;
-}
-
-/* =====================================================
-   BUTTONS
-   ===================================================== */
+/* ==========================================
+   10. BUTTONS
+   ========================================== */
 
 .stButton > button {
+    box-sizing: border-box;
     width: 100%;
-    min-height: 54px;
-
-    border: none;
-    border-radius: 13px;
-
-    background: #ffffff;
-    color: #351779;
-
+    min-height: 48px;
+    padding: 12px 16px;
+    border: 0;
+    border-radius: 12px;
+    background: #5145cd;
+    color: #ffffff !important;
     font-size: 16px;
-    font-weight: 850;
-
-    box-shadow: 0 5px 0 rgba(0, 0, 0, 0.2);
-
+    font-weight: 800;
+    line-height: 1.4;
+    box-shadow: 0 4px 10px rgba(81, 69, 205, 0.18);
     transition:
-        transform 0.15s ease,
-        filter 0.15s ease,
-        box-shadow 0.15s ease;
+        background-color 0.15s ease,
+        transform 0.15s ease;
 }
 
-/* Hover */
+.stButton > button p {
+    color: #ffffff !important;
+    font-weight: 800;
+}
 
 .stButton > button:hover {
-    background: #f4efff;
-    color: #351779;
-
-    transform: translateY(-2px);
-
-    box-shadow: 0 7px 0 rgba(0, 0, 0, 0.2);
+    background: #4035b5;
+    border: 0;
+    color: #ffffff !important;
+    transform: translateY(-1px);
 }
 
-/* Press */
-
-.stButton > button:active {
-    transform: translateY(2px);
-    box-shadow: 0 2px 0 rgba(0, 0, 0, 0.2);
+.stButton > button:focus-visible {
+    outline: 3px solid #a5b4fc;
+    outline-offset: 3px;
 }
 
-/* Primary action button */
-
-.stButton > button[kind="primary"] {
-    background: #fbbf24;
-    color: #29124f;
-
-    font-size: 18px;
-    font-weight: 900;
-
-    border: none;
-}
-
-.stButton > button[kind="primary"]:hover {
-    background: #fcd34d;
-    color: #29124f;
-}
-
-/* =====================================================
-   SIDEBAR
-   ===================================================== */
+/* ==========================================
+   11. SIDEBAR
+   ========================================== */
 
 section[data-testid="stSidebar"] {
     background: #ffffff;
-
-    border-right: 1px solid #e8e0ff;
+    border-right: 1px solid #e1e6f0;
 }
-
-section[data-testid="stSidebar"] > div {
-    background: #ffffff;
-}
-
-/* Sidebar headings */
 
 section[data-testid="stSidebar"] h1,
 section[data-testid="stSidebar"] h2,
 section[data-testid="stSidebar"] h3 {
-    color: #30146b !important;
-    font-weight: 850;
+    color: #202844;
 }
-
-/* Sidebar text */
 
 section[data-testid="stSidebar"] p,
 section[data-testid="stSidebar"] label,
-section[data-testid="stSidebar"] li,
-section[data-testid="stSidebar"] [data-testid="stMarkdownContainer"] {
-    color: #40365e !important;
+section[data-testid="stSidebar"] li {
+    color: #34415e !important;
+    line-height: 1.65;
 }
-
-/* Sidebar text input */
 
 section[data-testid="stSidebar"] input {
-    background: #f7f5ff !important;
-    color: #241747 !important;
-
-    border: 1px solid #d8cff4 !important;
-    border-radius: 10px !important;
+    background: #ffffff;
+    color: #202844;
 }
 
-/* Sidebar buttons */
+/* ==========================================
+   12. RESULTS TABLE
+   ========================================== */
 
-section[data-testid="stSidebar"] .stButton > button {
-    background: #351779;
-    color: #ffffff;
+[data-testid="stDataFrame"] {
+    border: 1px solid #dce2f0;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #ffffff;
 }
 
-section[data-testid="stSidebar"] .stButton > button:hover {
-    background: #4c2994;
-    color: #ffffff;
+/* ==========================================
+   13. ANSWER REVIEW EXPANDERS
+   ========================================== */
+
+[data-testid="stExpander"] {
+    background: #ffffff;
+    border: 1px solid #dce2f0;
+    border-radius: 12px;
+    margin-bottom: 10px;
 }
 
-/* =====================================================
-   INPUT FIELDS
-   ===================================================== */
-
-.stTextInput input,
-.stNumberInput input {
-    background: #ffffff !important;
-    color: #241747 !important;
-
-    border: 2px solid #e0d8f4 !important;
-    border-radius: 10px !important;
+[data-testid="stExpander"] summary {
+    color: #202844;
+    font-weight: 700;
+    line-height: 1.5;
 }
 
-/* Input labels */
-
-.stTextInput label,
-.stNumberInput label {
-    color: inherit !important;
-    font-weight: 700 !important;
-}
-
-/* =====================================================
-   DIVIDERS
-   ===================================================== */
+/* ==========================================
+   14. DIVIDERS
+   ========================================== */
 
 hr {
-    border: none;
-    border-top: 1px solid rgba(255, 255, 255, 0.18);
-    margin: 28px 0;
+    border-color: #dce2f0;
+    margin-top: 22px;
+    margin-bottom: 22px;
 }
 
-/* =====================================================
-   ALERTS
-   ===================================================== */
+/* ==========================================
+   15. MOBILE RESPONSIVE DESIGN
+   ========================================== */
 
-div[data-testid="stAlert"] {
-    border-radius: 13px;
-    font-weight: 650;
-}
-
-/* =====================================================
-   TABLES AND DATAFRAMES
-   ===================================================== */
-
-div[data-testid="stDataFrame"] {
-    background: #ffffff;
-    border-radius: 13px;
-    overflow: hidden;
-}
-
-/* =====================================================
-   EXPANDERS
-   ===================================================== */
-
-div[data-testid="stExpander"] {
-    background: #ffffff;
-
-    border: 1px solid #e5def5;
-    border-radius: 12px;
-
-    overflow: hidden;
-}
-
-div[data-testid="stExpander"] summary {
-    color: #30146b;
-    font-weight: 750;
-}
-
-/* =====================================================
-   CAPTIONS
-   ===================================================== */
-
-.stCaption,
-[data-testid="stCaptionContainer"] {
-    color: #e0d8ff !important;
-}
-
-/* =====================================================
-   ANIMATIONS
-   ===================================================== */
-
-@keyframes question-enter {
-    from {
-        opacity: 0;
-        transform: translateY(12px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-@keyframes answer-enter {
-    from {
-        opacity: 0;
-        transform: translateX(-8px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateX(0);
-    }
-}
-
-@keyframes feedback-enter {
-    from {
-        opacity: 0;
-        transform: scale(0.97);
-    }
-
-    to {
-        opacity: 1;
-        transform: scale(1);
-    }
-}
-
-/* =====================================================
-   RESPONSIVE DESIGN — TABLETS AND PHONES
-   ===================================================== */
-
-@media (max-width: 700px) {
+@media (max-width: 640px) {
     .block-container {
-        padding: 1.2rem 1rem 2rem;
+        padding: 1rem 0.8rem 2rem;
     }
 
     .quiz-title {
-        font-size: 31px;
-        letter-spacing: -0.5px;
+        font-size: 28px;
     }
 
     .quiz-subtitle {
         font-size: 14px;
-        margin-bottom: 22px;
+        margin-bottom: 20px;
     }
 
     .proverb-card {
-        font-size: 23px;
-        padding: 29px 17px;
-        margin: 20px 0;
+        font-size: 21px;
+        padding: 20px 14px;
+        margin: 17px 0;
+        line-height: 1.5;
     }
 
     div[role="radiogroup"] {
-        grid-template-columns: 1fr;
-        gap: 12px;
+        grid-template-columns: minmax(0, 1fr);
+        gap: 10px;
     }
 
     div[role="radiogroup"] > label {
-        min-height: 76px;
-        padding: 16px !important;
-        font-size: 16px !important;
+        min-height: 72px;
+        padding: 15px 13px;
+        border-radius: 12px;
+    }
+
+    div[role="radiogroup"] > label p {
+        font-size: 15px !important;
+        line-height: 1.5 !important;
     }
 
     .answer-card {
-        padding: 16px;
         font-size: 15px;
+        padding: 15px;
     }
 
     [data-testid="stMetric"] {
-        padding: 14px 8px;
+        padding: 11px 7px;
     }
 
     [data-testid="stMetricLabel"] {
@@ -732,20 +433,25 @@ div[data-testid="stExpander"] summary {
     }
 
     [data-testid="stMetricValue"] {
-        font-size: 21px !important;
+        font-size: 20px !important;
+    }
+
+    .stButton > button {
+        min-height: 46px;
+        font-size: 15px;
     }
 }
 
-/* =====================================================
-   ACCESSIBILITY — REDUCE MOTION
-   ===================================================== */
+/* ==========================================
+   16. ACCESSIBILITY
+   ========================================== */
 
 @media (prefers-reduced-motion: reduce) {
     *,
     *::before,
     *::after {
-        animation-duration: 0.01ms !important;
-        animation-iteration-count: 1 !important;
-        transition-duration: 0.01ms !important;
+        transition: none !important;
+        animation: none !important;
+        scroll-behavior: auto !important;
     }
 }
